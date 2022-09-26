@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e36ab195-ea61-4ff6-ba52-84f42a640e83" basePath="/" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="259b497b-adb7-475b-9195-6e24b6059963" >
+		<file:connection workingDir="C:\testfiles" />
+	</file:config>
+	<flow name="base64Flow" doc:id="5fd19a6b-c4a2-4664-b292-39577834e89e" >
+		<http:listener doc:name="Listener" doc:id="99f3b332-98a2-4ead-a177-f6f516b67e70" config-ref="HTTP_Listener_config" path="/">
+			<repeatable-in-memory-stream />
+		</http:listener>
+		<ee:transform doc:name="Transform Message" doc:id="f5de4a9d-7a11-492e-8a65-bde265dc0bb0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Binaries
+output application/octet-stream
+---
+//fromBase64(payload as String)
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="56ea832c-c553-4a9b-84fe-7eb678aef6e5" mimeType="image/png"/>
+		<file:write doc:name="Write" doc:id="50459cec-b37d-4474-8182-3715a3a528e7" config-ref="File_Config" path="hello.png"/>
+	</flow>
+</mule>
